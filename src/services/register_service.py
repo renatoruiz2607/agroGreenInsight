@@ -1,10 +1,17 @@
 # services/register_service.py
 
 from models.field import Field
-from utils.validators import get_non_empty_string, get_positive_float, get_confirmation
+from models.fertilizer_application import FertilizerApplication
+from utils.validators import (
+    get_non_empty_string,
+    get_positive_float,
+    get_confirmation,
+    get_valid_field_id
+)
 from data.json_manager import load_data, save_data
 
 FIELDS_FILE_PATH = "src/data/fields.json"
+APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
 
 def register_field():
     """
@@ -95,3 +102,74 @@ def delete_field():
     save_data(FIELDS_FILE_PATH, fields)
 
     print("Talhão excluído com sucesso!")
+
+def register_fertilizer_application():
+    """
+    Registers a fertilizer application linked to an existing field.
+    """
+    print("\n=== REGISTRO DE APLICAÇÃO DE FERTILIZANTE ===")
+
+    fields = load_data(FIELDS_FILE_PATH)
+
+    if not fields:
+        print("Nenhum talhão cadastrado. Cadastre um talhão antes de registrar uma aplicação.")
+        return
+
+    print("\nTalhões disponíveis:")
+    for field in fields:
+        print(f"ID: {field['field_id']} | Nome: {field['name']} | Cultura: {field['crop_type']}")
+
+    field_id = get_valid_field_id(
+        "\nDigite o ID do talhão para registrar a aplicação: ",
+        fields
+    )
+
+    fertilizer_type = get_non_empty_string("Digite o tipo de fertilizante: ")
+    quantity = get_positive_float("Digite a quantidade aplicada: ")
+    application_date = get_non_empty_string("Digite a data da aplicação (dd/mm/aaaa): ")
+
+    applications = load_data(APPLICATIONS_FILE_PATH)
+
+    application_id = len(applications) + 1
+    new_application = FertilizerApplication(
+        application_id,
+        field_id,
+        fertilizer_type,
+        quantity,
+        application_date
+    )
+
+    applications.append(new_application.to_dict())
+    save_data(APPLICATIONS_FILE_PATH, applications)
+
+    print("\nAplicação de fertilizante registrada com sucesso!")
+
+def list_fertilizer_applications():
+    """
+    Displays all registered fertilizer applications.
+    """
+    print("\n=== LISTA DE APLICAÇÕES DE FERTILIZANTE ===")
+
+    applications = load_data(APPLICATIONS_FILE_PATH)
+    fields = load_data(FIELDS_FILE_PATH)
+
+    if not applications:
+        print("Nenhuma aplicação de fertilizante cadastrada.")
+        return
+
+    field_names_by_id = {
+        field["field_id"]: field["name"]
+        for field in fields
+    }
+
+    for application in applications:
+        field_name = field_names_by_id.get(
+            application["field_id"],
+            "Talhão não encontrado"
+        )
+
+        print(f"\nID da aplicação: {application['application_id']}")
+        print(f"Talhão: {field_name} (ID: {application['field_id']})")
+        print(f"Tipo de fertilizante: {application['fertilizer_type']}")
+        print(f"Quantidade aplicada: {application['quantity']}")
+        print(f"Data da aplicação: {application['application_date']}")

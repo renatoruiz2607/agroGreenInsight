@@ -1,0 +1,9 @@
+[
+    {
+        "application_id": 1,
+        "field_id": 2,
+        "fertilizer_type": "NPK 10-10-10",
+        "quantity": 25.0,
+        "application_date": "19/04/2026"
+    }
+]
