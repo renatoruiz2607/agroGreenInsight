@@ -55,7 +55,7 @@ def list_fields():
 
 def delete_field():
     """
-    Deletes a field by its ID.
+    Deletes a field and all related fertilizer applications and production records.
     """
     print("\n=== EXCLUSÃO DE TALHÃO ===")
 
@@ -65,7 +65,6 @@ def delete_field():
         print("Nenhum talhão cadastrado.")
         return
 
-    # Mostrar lista antes de excluir
     for field in fields:
         print(f"\nID: {field['field_id']} - Nome: {field['name']}")
 
@@ -75,7 +74,6 @@ def delete_field():
         print("Entrada inválida. Digite um número válido.")
         return
 
-    # Buscar talhão
     field_to_delete = None
     for field in fields:
         if field["field_id"] == field_id:
@@ -86,24 +84,71 @@ def delete_field():
         print("Talhão não encontrado.")
         return
 
-    # Confirmação
+    applications = load_data(APPLICATIONS_FILE_PATH)
+    production_records = load_data(PRODUCTION_FILE_PATH)
+
+    related_applications = [
+        application for application in applications
+        if application["field_id"] == field_id
+    ]
+
+    related_production_records = [
+        record for record in production_records
+        if record["field_id"] == field_id
+    ]
+
+    print("\nOs seguintes dados serão excluídos:")
+    print(f"- Talhão: {field_to_delete['name']}")
+    print(f"- Aplicações de fertilizante vinculadas: {len(related_applications)}")
+    print(f"- Registros de produção vinculados: {len(related_production_records)}")
+
     confirm = get_confirmation(
-    f"Tem certeza que deseja excluir o talhão '{field_to_delete['name']}'? (s/n): "
-)
+        "\nTem certeza que deseja continuar com a exclusão em cascata? (s/n): "
+    )
+
     if not confirm:
         print("Exclusão cancelada.")
         return
 
-    # Remover
-    fields.remove(field_to_delete)
+    updated_fields = [
+        field for field in fields
+        if field["field_id"] != field_id
+    ]
 
-    # Reorganizar IDs (boa prática)
-    for index, field in enumerate(fields):
-        field["field_id"] = index + 1
+    updated_applications = [
+        application for application in applications
+        if application["field_id"] != field_id
+    ]
 
-    save_data(FIELDS_FILE_PATH, fields)
+    updated_production_records = [
+        record for record in production_records
+        if record["field_id"] != field_id
+    ]
 
-    print("Talhão excluído com sucesso!")
+    for index, field in enumerate(updated_fields):
+        old_field_id = field["field_id"]
+        new_field_id = index + 1
+        field["field_id"] = new_field_id
+
+        for application in updated_applications:
+            if application["field_id"] == old_field_id:
+                application["field_id"] = new_field_id
+
+        for record in updated_production_records:
+            if record["field_id"] == old_field_id:
+                record["field_id"] = new_field_id
+
+    for index, application in enumerate(updated_applications):
+        application["application_id"] = index + 1
+
+    for index, record in enumerate(updated_production_records):
+        record["record_id"] = index + 1
+
+    save_data(FIELDS_FILE_PATH, updated_fields)
+    save_data(APPLICATIONS_FILE_PATH, updated_applications)
+    save_data(PRODUCTION_FILE_PATH, updated_production_records)
+
+    print("\nTalhão e registros vinculados excluídos com sucesso!")
 
 def register_fertilizer_application():
     """

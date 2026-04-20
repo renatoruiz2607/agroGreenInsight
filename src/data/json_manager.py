@@ -17,7 +17,6 @@ def load_data(file_path):
     except (json.JSONDecodeError, FileNotFoundError):
         return []
 
-
 def save_data(file_path, data):
     """
     Saves data to a JSON file.
