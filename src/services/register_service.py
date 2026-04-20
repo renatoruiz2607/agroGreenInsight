@@ -2,6 +2,7 @@
 
 from models.field import Field
 from models.fertilizer_application import FertilizerApplication
+from models.production_record import ProductionRecord
 from utils.validators import (
     get_non_empty_string,
     get_positive_float,
@@ -12,6 +13,7 @@ from data.json_manager import load_data, save_data
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
+PRODUCTION_FILE_PATH = "src/data/production_records.json"
 
 def register_field():
     """
@@ -173,3 +175,74 @@ def list_fertilizer_applications():
         print(f"Tipo de fertilizante: {application['fertilizer_type']}")
         print(f"Quantidade aplicada: {application['quantity']}")
         print(f"Data da aplicação: {application['application_date']}")
+
+def register_production_record():
+    """
+    Registers a production record linked to an existing field.
+    """
+    print("\n=== REGISTRO DE PRODUÇÃO ===")
+
+    fields = load_data(FIELDS_FILE_PATH)
+
+    if not fields:
+        print("Nenhum talhão cadastrado. Cadastre um talhão antes de registrar uma produção.")
+        return
+
+    print("\nTalhões disponíveis:")
+    for field in fields:
+        print(f"ID: {field['field_id']} | Nome: {field['name']} | Cultura: {field['crop_type']}")
+
+    field_id = get_valid_field_id(
+        "\nDigite o ID do talhão para registrar a produção: ",
+        fields
+    )
+
+    harvest_name = get_non_empty_string("Digite o nome da safra ou ciclo produtivo: ")
+    production_amount = get_positive_float("Digite a quantidade produzida: ")
+    record_date = get_non_empty_string("Digite a data do registro (dd/mm/aaaa): ")
+
+    production_records = load_data(PRODUCTION_FILE_PATH)
+
+    record_id = len(production_records) + 1
+    new_record = ProductionRecord(
+        record_id,
+        field_id,
+        harvest_name,
+        production_amount,
+        record_date
+    )
+
+    production_records.append(new_record.to_dict())
+    save_data(PRODUCTION_FILE_PATH, production_records)
+
+    print("\nRegistro de produção cadastrado com sucesso!")
+
+def list_production_records():
+    """
+    Displays all registered production records.
+    """
+    print("\n=== LISTA DE REGISTROS DE PRODUÇÃO ===")
+
+    production_records = load_data(PRODUCTION_FILE_PATH)
+    fields = load_data(FIELDS_FILE_PATH)
+
+    if not production_records:
+        print("Nenhum registro de produção cadastrado.")
+        return
+
+    field_names_by_id = {
+        field["field_id"]: field["name"]
+        for field in fields
+    }
+
+    for record in production_records:
+        field_name = field_names_by_id.get(
+            record["field_id"],
+            "Talhão não encontrado"
+        )
+
+        print(f"\nID do registro: {record['record_id']}")
+        print(f"Talhão: {field_name} (ID: {record['field_id']})")
+        print(f"Safra/Ciclo: {record['harvest_name']}")
+        print(f"Quantidade produzida: {record['production_amount']}")
+        print(f"Data do registro: {record['record_date']}")
