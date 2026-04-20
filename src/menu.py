@@ -1,7 +1,13 @@
 # menu.py
 
 from utils.validators import get_valid_option
-from services.register_service import register_field, list_fields, delete_field
+from services.register_service import (
+    register_field,
+    list_fields,
+    delete_field,
+    register_fertilizer_application,
+    list_fertilizer_applications
+)
 
 def main_menu():
     while True:
@@ -10,12 +16,13 @@ def main_menu():
         print("2. Listar talhões")
         print("3. Excluir talhão")
         print("4. Registrar aplicação de fertilizante")
-        print("5. Registrar produção")
-        print("6. Analisar eficiência")
-        print("7. Gerar recomendação sustentável")
-        print("8. Sair")
+        print("5. Listar aplicações de fertilizante")
+        print("6. Registrar produção")
+        print("7. Analisar eficiência")
+        print("8. Gerar recomendação sustentável")
+        print("9. Sair")
 
-        option = get_valid_option("Escolha uma opção: ", 1, 8)
+        option = get_valid_option("Escolha uma opção: ", 1, 9)
 
         if option == 1:
             register_field()
@@ -24,13 +31,15 @@ def main_menu():
         elif option == 3:
             delete_field()
         elif option == 4:
-            print(">> Registro de aplicação ainda não implementado")
+            register_fertilizer_application()
         elif option == 5:
-            print(">> Registro de produção ainda não implementado")
+            list_fertilizer_applications()
         elif option == 6:
-            print(">> Análise de eficiência ainda não implementada")
+            print(">> Registro de produção ainda não implementado")
         elif option == 7:
-            print(">> Geração de recomendação ainda não implementada")
+            print(">> Análise de eficiência ainda não implementada")
         elif option == 8:
+            print(">> Geração de recomendação ainda não implementada")
+        elif option == 9:
             print("Encerrando o sistema...")
             break

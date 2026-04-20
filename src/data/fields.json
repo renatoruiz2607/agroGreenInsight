@@ -4,5 +4,11 @@
         "name": "Talhão Noroeste",
         "area": 6.5,
         "crop_type": "Milho"
+    },
+    {
+        "field_id": 2,
+        "name": "Talhão A",
+        "area": 13.4,
+        "crop_type": "Uva"
     }
 ]

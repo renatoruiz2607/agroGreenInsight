@@ -59,3 +59,21 @@ def get_confirmation(message):
             return value == "s"
         else:
             print("Entrada inválida. Digite 's' para sim ou 'n' para não.")
+            
+def get_valid_field_id(message, fields):
+    """
+    Ensures the user enters an existing field ID.
+    """
+    valid_ids = [field["field_id"] for field in fields]
+
+    while True:
+        try:
+            value = int(input(message))
+
+            if value in valid_ids:
+                return value
+
+            print("ID de talhão inválido. Escolha um ID da lista.")
+
+        except ValueError:
+            print("Entrada inválida. Digite um número válido.")
