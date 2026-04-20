@@ -7,6 +7,7 @@ from services.analysis_service import (
     classify_efficiency,
     classify_environmental_risk
 )
+from data.txt_manager import write_log
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -120,3 +121,11 @@ def generate_sustainable_recommendation():
     print(f"Nível de eficiência produtiva: {efficiency_level}")
     print(f"Nível de risco ambiental: {environmental_risk}")
     print(f"Recomendação: {recommendation}")
+
+    write_log(
+        "SUSTAINABLE_RECOMMENDATION_GENERATED",
+        f"Field ID {field_id} recommendation generated | "
+        f"Usage: {usage_level} | "
+        f"Efficiency: {efficiency_level} | "
+        f"Risk: {environmental_risk}"
+    )
