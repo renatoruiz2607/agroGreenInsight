@@ -1,1 +1,9 @@
-[]
+[
+    {
+        "record_id": 1,
+        "field_id": 1,
+        "harvest_name": "Safra 2026",
+        "production_amount": 150.0,
+        "record_date": "20/04/2026"
+    }
+]

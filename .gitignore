@@ -4,3 +4,4 @@
 *.xlsx
 __pycache__/
 *.py[cod]
+src/data/system_log.txt

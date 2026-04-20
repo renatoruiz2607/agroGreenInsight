@@ -10,6 +10,7 @@ from utils.validators import (
     get_valid_field_id
 )
 from data.json_manager import load_data, save_data
+from data.txt_manager import write_log
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -34,6 +35,11 @@ def register_field():
     save_data(FIELDS_FILE_PATH, fields)
 
     print("\nTalhão cadastrado com sucesso!")
+
+    write_log(
+        "FIELD_REGISTERED",
+        f"Field ID {field_id} registered - Name: {name}, Area: {area}, Crop: {crop_type}"
+    )
 
 def list_fields():
     """
@@ -148,6 +154,13 @@ def delete_field():
     save_data(APPLICATIONS_FILE_PATH, updated_applications)
     save_data(PRODUCTION_FILE_PATH, updated_production_records)
 
+    write_log(
+        "FIELD_DELETED",
+        f"Field ID {field_id} deleted - Name: {field_to_delete['name']} | "
+        f"Deleted applications: {len(related_applications)} | "
+        f"Deleted production records: {len(related_production_records)}"
+    )
+
     print("\nTalhão e registros vinculados excluídos com sucesso!")
 
 def register_fertilizer_application():
@@ -190,6 +203,12 @@ def register_fertilizer_application():
     save_data(APPLICATIONS_FILE_PATH, applications)
 
     print("\nAplicação de fertilizante registrada com sucesso!")
+
+    write_log(
+        "FERTILIZER_APPLICATION_REGISTERED",
+        f"Application ID {application_id} registered for Field ID {field_id} | "
+        f"Type: {fertilizer_type} | Quantity: {quantity} | Date: {application_date}"
+    )
 
 def list_fertilizer_applications():
     """
@@ -261,6 +280,12 @@ def register_production_record():
     save_data(PRODUCTION_FILE_PATH, production_records)
 
     print("\nRegistro de produção cadastrado com sucesso!")
+
+    write_log(
+        "PRODUCTION_RECORD_REGISTERED",
+        f"Production record ID {record_id} registered for Field ID {field_id} | "
+        f"Harvest: {harvest_name} | Amount: {production_amount} | Date: {record_date}"
+    )
 
 def list_production_records():
     """

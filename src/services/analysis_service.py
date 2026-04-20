@@ -2,6 +2,7 @@
 
 from data.json_manager import load_data
 from utils.validators import get_valid_field_id
+from data.txt_manager import write_log
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -120,3 +121,11 @@ def analyze_field_efficiency():
     print(f"Nível de uso de fertilizante: {usage_level}")
     print(f"Nível de eficiência produtiva: {efficiency_level}")
     print(f"Nível de risco ambiental: {environmental_risk}")
+
+    write_log(
+        "FIELD_ANALYZED",
+        f"Field ID {field_id} analyzed | "
+        f"Fertilizer usage: {usage_level} | "
+        f"Efficiency: {efficiency_level} | "
+        f"Environmental risk: {environmental_risk}"
+    )
