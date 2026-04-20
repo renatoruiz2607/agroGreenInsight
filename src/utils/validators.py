@@ -17,7 +17,6 @@ def get_valid_option(message, min_option, max_option):
         except ValueError:
             print("Entrada inválida. Digite um número válido.")
 
-
 def get_non_empty_string(message):
     """
     Ensures the user enters a non-empty text.

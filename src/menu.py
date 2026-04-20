@@ -10,6 +10,8 @@ from services.register_service import (
     register_production_record,
     list_production_records
 )
+from services.analysis_service import analyze_field_efficiency
+from services.recommendation_service import generate_sustainable_recommendation
 
 def main_menu():
     while True:
@@ -42,9 +44,9 @@ def main_menu():
         elif option == 7:
             list_production_records()
         elif option == 8:
-            print(">> Análise de eficiência ainda não implementada")
+            analyze_field_efficiency()
         elif option == 9:
-            print(">> Geração de recomendação ainda não implementada")
+            generate_sustainable_recommendation()
         elif option == 10:
             print("Encerrando o sistema...")
             break
