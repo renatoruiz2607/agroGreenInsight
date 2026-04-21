@@ -11,6 +11,18 @@ from utils.validators import (
 )
 from data.json_manager import load_data, save_data
 from data.txt_manager import write_log
+from data.oracle_manager import (
+    insert_field,
+    insert_fertilizer_application,
+    insert_production_record,
+    delete_field_from_oracle,
+    delete_fertilizer_applications_by_field_id,
+    delete_production_records_by_field_id,
+    list_fields_from_oracle,
+    list_fertilizer_applications_from_oracle,
+    list_production_records_from_oracle
+)
+from utils.helpers import generate_next_id
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -18,7 +30,7 @@ PRODUCTION_FILE_PATH = "src/data/production_records.json"
 
 def register_field():
     """
-    Registers a new field and saves it to a JSON file.
+    Registers a new field and saves it to a JSON file and Oracle database.
     """
     print("\n=== CADASTRO DE TALHÃO ===")
 
@@ -28,13 +40,16 @@ def register_field():
 
     fields = load_data(FIELDS_FILE_PATH)
 
-    field_id = len(fields) + 1
+    field_id = generate_next_id(fields, "field_id")
     new_field = Field(field_id, name, area, crop_type)
 
     fields.append(new_field.to_dict())
     save_data(FIELDS_FILE_PATH, fields)
 
+    oracle_success, oracle_message = insert_field(new_field.to_dict())
+
     print("\nTalhão cadastrado com sucesso!")
+    print(oracle_message)
 
     write_log(
         "FIELD_REGISTERED",
@@ -43,25 +58,43 @@ def register_field():
 
 def list_fields():
     """
-    Displays all registered fields.
+    Displays all registered fields from JSON and Oracle.
     """
-    print("\n=== LISTA DE TALHÕES ===")
+    print("\n=== TALHÕES EM JSON ===")
 
     fields = load_data(FIELDS_FILE_PATH)
 
     if not fields:
-        print("Nenhum talhão cadastrado.")
+        print("Nenhum talhão cadastrado no JSON.")
+    else:
+        for field in fields:
+            print(f"\nID: {field['field_id']}")
+            print(f"Nome: {field['name']}")
+            print(f"Área (ha): {field['area']}")
+            print(f"Cultura: {field['crop_type']}")
+
+    print("\n=== TALHÕES NO ORACLE ===")
+
+    oracle_success, oracle_result = list_fields_from_oracle()
+
+    if not oracle_success:
+        print(oracle_result)
         return
 
-    for field in fields:
-        print(f"\nID: {field['field_id']}")
-        print(f"Nome: {field['name']}")
-        print(f"Área (ha): {field['area']}")
-        print(f"Cultura: {field['crop_type']}")
+    if not oracle_result:
+        print("Nenhum talhão cadastrado no Oracle.")
+        return
+
+    for row in oracle_result:
+        print(f"\nID: {row[0]}")
+        print(f"Nome: {row[1]}")
+        print(f"Área (ha): {row[2]}")
+        print(f"Cultura: {row[3]}")
 
 def delete_field():
     """
     Deletes a field and all related fertilizer applications and production records.
+    IDs are not reorganized after deletion.
     """
     print("\n=== EXCLUSÃO DE TALHÃO ===")
 
@@ -131,28 +164,17 @@ def delete_field():
         if record["field_id"] != field_id
     ]
 
-    for index, field in enumerate(updated_fields):
-        old_field_id = field["field_id"]
-        new_field_id = index + 1
-        field["field_id"] = new_field_id
-
-        for application in updated_applications:
-            if application["field_id"] == old_field_id:
-                application["field_id"] = new_field_id
-
-        for record in updated_production_records:
-            if record["field_id"] == old_field_id:
-                record["field_id"] = new_field_id
-
-    for index, application in enumerate(updated_applications):
-        application["application_id"] = index + 1
-
-    for index, record in enumerate(updated_production_records):
-        record["record_id"] = index + 1
-
     save_data(FIELDS_FILE_PATH, updated_fields)
     save_data(APPLICATIONS_FILE_PATH, updated_applications)
     save_data(PRODUCTION_FILE_PATH, updated_production_records)
+
+    oracle_app_success, oracle_app_message = delete_fertilizer_applications_by_field_id(field_id)
+    oracle_prod_success, oracle_prod_message = delete_production_records_by_field_id(field_id)
+    oracle_field_success, oracle_field_message = delete_field_from_oracle(field_id)
+
+    print(oracle_app_message)
+    print(oracle_prod_message)
+    print(oracle_field_message)
 
     write_log(
         "FIELD_DELETED",
@@ -190,7 +212,7 @@ def register_fertilizer_application():
 
     applications = load_data(APPLICATIONS_FILE_PATH)
 
-    application_id = len(applications) + 1
+    application_id = generate_next_id(applications, "application_id")
     new_application = FertilizerApplication(
         application_id,
         field_id,
@@ -202,7 +224,12 @@ def register_fertilizer_application():
     applications.append(new_application.to_dict())
     save_data(APPLICATIONS_FILE_PATH, applications)
 
+    oracle_success, oracle_message = insert_fertilizer_application(
+        new_application.to_dict()
+    )
+
     print("\nAplicação de fertilizante registrada com sucesso!")
+    print(oracle_message)
 
     write_log(
         "FERTILIZER_APPLICATION_REGISTERED",
@@ -212,33 +239,51 @@ def register_fertilizer_application():
 
 def list_fertilizer_applications():
     """
-    Displays all registered fertilizer applications.
+    Displays all registered fertilizer applications from JSON and Oracle.
     """
-    print("\n=== LISTA DE APLICAÇÕES DE FERTILIZANTE ===")
+    print("\n=== APLICAÇÕES DE FERTILIZANTE EM JSON ===")
 
     applications = load_data(APPLICATIONS_FILE_PATH)
     fields = load_data(FIELDS_FILE_PATH)
 
     if not applications:
-        print("Nenhuma aplicação de fertilizante cadastrada.")
+        print("Nenhuma aplicação de fertilizante cadastrada no JSON.")
+    else:
+        field_names_by_id = {
+            field["field_id"]: field["name"]
+            for field in fields
+        }
+
+        for application in applications:
+            field_name = field_names_by_id.get(
+                application["field_id"],
+                "Talhão não encontrado"
+            )
+
+            print(f"\nID da aplicação: {application['application_id']}")
+            print(f"Talhão: {field_name} (ID: {application['field_id']})")
+            print(f"Tipo de fertilizante: {application['fertilizer_type']}")
+            print(f"Quantidade aplicada: {application['quantity']}")
+            print(f"Data da aplicação: {application['application_date']}")
+
+    print("\n=== APLICAÇÕES DE FERTILIZANTE NO ORACLE ===")
+
+    oracle_success, oracle_result = list_fertilizer_applications_from_oracle()
+
+    if not oracle_success:
+        print(oracle_result)
         return
 
-    field_names_by_id = {
-        field["field_id"]: field["name"]
-        for field in fields
-    }
+    if not oracle_result:
+        print("Nenhuma aplicação de fertilizante cadastrada no Oracle.")
+        return
 
-    for application in applications:
-        field_name = field_names_by_id.get(
-            application["field_id"],
-            "Talhão não encontrado"
-        )
-
-        print(f"\nID da aplicação: {application['application_id']}")
-        print(f"Talhão: {field_name} (ID: {application['field_id']})")
-        print(f"Tipo de fertilizante: {application['fertilizer_type']}")
-        print(f"Quantidade aplicada: {application['quantity']}")
-        print(f"Data da aplicação: {application['application_date']}")
+    for row in oracle_result:
+        print(f"\nID da aplicação: {row[0]}")
+        print(f"ID do talhão: {row[1]}")
+        print(f"Tipo de fertilizante: {row[2]}")
+        print(f"Quantidade aplicada: {row[3]}")
+        print(f"Data da aplicação: {row[4]}")
 
 def register_production_record():
     """
@@ -267,7 +312,7 @@ def register_production_record():
 
     production_records = load_data(PRODUCTION_FILE_PATH)
 
-    record_id = len(production_records) + 1
+    record_id = generate_next_id(production_records, "record_id")
     new_record = ProductionRecord(
         record_id,
         field_id,
@@ -279,7 +324,12 @@ def register_production_record():
     production_records.append(new_record.to_dict())
     save_data(PRODUCTION_FILE_PATH, production_records)
 
+    oracle_success, oracle_message = insert_production_record(
+        new_record.to_dict()
+    )
+
     print("\nRegistro de produção cadastrado com sucesso!")
+    print(oracle_message)
 
     write_log(
         "PRODUCTION_RECORD_REGISTERED",
@@ -289,30 +339,48 @@ def register_production_record():
 
 def list_production_records():
     """
-    Displays all registered production records.
+    Displays all registered production records from JSON and Oracle.
     """
-    print("\n=== LISTA DE REGISTROS DE PRODUÇÃO ===")
+    print("\n=== REGISTROS DE PRODUÇÃO EM JSON ===")
 
     production_records = load_data(PRODUCTION_FILE_PATH)
     fields = load_data(FIELDS_FILE_PATH)
 
     if not production_records:
-        print("Nenhum registro de produção cadastrado.")
+        print("Nenhum registro de produção cadastrado no JSON.")
+    else:
+        field_names_by_id = {
+            field["field_id"]: field["name"]
+            for field in fields
+        }
+
+        for record in production_records:
+            field_name = field_names_by_id.get(
+                record["field_id"],
+                "Talhão não encontrado"
+            )
+
+            print(f"\nID do registro: {record['record_id']}")
+            print(f"Talhão: {field_name} (ID: {record['field_id']})")
+            print(f"Safra/Ciclo: {record['harvest_name']}")
+            print(f"Quantidade produzida: {record['production_amount']}")
+            print(f"Data do registro: {record['record_date']}")
+
+    print("\n=== REGISTROS DE PRODUÇÃO NO ORACLE ===")
+
+    oracle_success, oracle_result = list_production_records_from_oracle()
+
+    if not oracle_success:
+        print(oracle_result)
         return
 
-    field_names_by_id = {
-        field["field_id"]: field["name"]
-        for field in fields
-    }
+    if not oracle_result:
+        print("Nenhum registro de produção cadastrado no Oracle.")
+        return
 
-    for record in production_records:
-        field_name = field_names_by_id.get(
-            record["field_id"],
-            "Talhão não encontrado"
-        )
-
-        print(f"\nID do registro: {record['record_id']}")
-        print(f"Talhão: {field_name} (ID: {record['field_id']})")
-        print(f"Safra/Ciclo: {record['harvest_name']}")
-        print(f"Quantidade produzida: {record['production_amount']}")
-        print(f"Data do registro: {record['record_date']}")
+    for row in oracle_result:
+        print(f"\nID do registro: {row[0]}")
+        print(f"ID do talhão: {row[1]}")
+        print(f"Safra/Ciclo: {row[2]}")
+        print(f"Quantidade produzida: {row[3]}")
+        print(f"Data do registro: {row[4]}")
