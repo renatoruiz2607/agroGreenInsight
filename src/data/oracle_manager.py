@@ -455,3 +455,131 @@ def initialize_oracle_database():
     all_success = fields_success and applications_success and production_success
 
     return all_success, messages
+
+def field_exists(field_id):
+    """
+    Checks if a field already exists in Oracle.
+    """
+    connection = None
+
+    try:
+        connection = get_oracle_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM fields
+                WHERE field_id = :field_id
+            """, {"field_id": field_id})
+
+            result = cursor.fetchone()
+            return result[0] > 0
+
+    finally:
+        if connection:
+            connection.close()
+
+def fertilizer_application_exists(application_id):
+    """
+    Checks if a fertilizer application already exists in Oracle.
+    """
+    connection = None
+
+    try:
+        connection = get_oracle_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM fertilizer_applications
+                WHERE application_id = :application_id
+            """, {"application_id": application_id})
+
+            result = cursor.fetchone()
+            return result[0] > 0
+
+    finally:
+        if connection:
+            connection.close()
+
+def production_record_exists(record_id):
+    """
+    Checks if a production record already exists in Oracle.
+    """
+    connection = None
+
+    try:
+        connection = get_oracle_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COUNT(*)
+                FROM production_records
+                WHERE record_id = :record_id
+            """, {"record_id": record_id})
+
+            result = cursor.fetchone()
+            return result[0] > 0
+
+    finally:
+        if connection:
+            connection.close()
+
+def sync_fields_to_oracle(fields):
+    """
+    Synchronizes JSON fields data to Oracle.
+    Inserts only records that do not already exist.
+    """
+    inserted_count = 0
+
+    for field in fields:
+        if not field_exists(field["field_id"]):
+            success, _ = insert_field(field)
+            if success:
+                inserted_count += 1
+
+    return inserted_count
+
+def sync_fertilizer_applications_to_oracle(applications):
+    """
+    Synchronizes JSON fertilizer applications data to Oracle.
+    Inserts only records that do not already exist.
+    """
+    inserted_count = 0
+
+    for application in applications:
+        if not fertilizer_application_exists(application["application_id"]):
+            success, _ = insert_fertilizer_application(application)
+            if success:
+                inserted_count += 1
+
+    return inserted_count
+
+def sync_production_records_to_oracle(production_records):
+    """
+    Synchronizes JSON production records data to Oracle.
+    Inserts only records that do not already exist.
+    """
+    inserted_count = 0
+
+    for record in production_records:
+        if not production_record_exists(record["record_id"]):
+            success, _ = insert_production_record(record)
+            if success:
+                inserted_count += 1
+
+    return inserted_count
+
+def sync_json_data_to_oracle(fields, applications, production_records):
+    """
+    Synchronizes JSON data to Oracle after table initialization.
+    """
+    fields_inserted = sync_fields_to_oracle(fields)
+    applications_inserted = sync_fertilizer_applications_to_oracle(applications)
+    production_inserted = sync_production_records_to_oracle(production_records)
+
+    return {
+        "fields_inserted": fields_inserted,
+        "applications_inserted": applications_inserted,
+        "production_inserted": production_inserted
+    }
