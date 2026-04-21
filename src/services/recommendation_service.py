@@ -5,9 +5,19 @@ from utils.validators import get_valid_field_id
 from services.analysis_service import (
     classify_fertilizer_usage,
     classify_efficiency,
-    classify_environmental_risk
+    classify_environmental_risk,
+    USAGE_LEVELS,
+    EFFICIENCY_LEVELS,
+    RISK_LEVELS
 )
 from data.txt_manager import write_log
+from utils.formatters import (
+    print_title,
+    print_subtitle,
+    print_separator,
+    print_empty_message,
+    print_key_value
+)
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -18,25 +28,41 @@ def generate_recommendation_message(usage_level, efficiency_level, environmental
     Generates a sustainable recommendation based on fertilizer usage,
     productivity efficiency and environmental risk.
     """
-    if usage_level == "baixo" and efficiency_level == "alta" and environmental_risk == "baixo":
+    if (
+        usage_level == USAGE_LEVELS[0]
+        and efficiency_level == EFFICIENCY_LEVELS[2]
+        and environmental_risk == RISK_LEVELS[0]
+    ):
         return (
             "Manter a estratégia atual, pois o talhão apresenta bom retorno produtivo "
             "com baixo impacto ambiental."
         )
 
-    if usage_level == "alto" and efficiency_level == "baixa" and environmental_risk == "alto":
+    if (
+        usage_level == USAGE_LEVELS[2]
+        and efficiency_level == EFFICIENCY_LEVELS[0]
+        and environmental_risk == RISK_LEVELS[2]
+    ):
         return (
             "Reduzir a intensidade de aplicação e revisar o manejo do talhão, "
             "pois há alto consumo de insumos, baixo retorno produtivo e elevado risco ambiental."
         )
 
-    if usage_level == "alto" and efficiency_level == "alta" and environmental_risk == "médio":
+    if (
+        usage_level == USAGE_LEVELS[2]
+        and efficiency_level == EFFICIENCY_LEVELS[2]
+        and environmental_risk == RISK_LEVELS[1]
+    ):
         return (
             "Manter o bom desempenho produtivo, mas avaliar alternativas para reduzir a "
             "dependência de fertilizantes e aumentar a sustentabilidade da operação."
         )
 
-    if usage_level == "baixo" and efficiency_level == "baixa" and environmental_risk == "médio":
+    if (
+        usage_level == USAGE_LEVELS[0]
+        and efficiency_level == EFFICIENCY_LEVELS[0]
+        and environmental_risk == RISK_LEVELS[1]
+    ):
         return (
             "Revisar o planejamento produtivo do talhão, pois o baixo uso de fertilizante "
             "não está resultando em bom desempenho produtivo."
@@ -51,17 +77,20 @@ def generate_sustainable_recommendation():
     """
     Generates a sustainable recommendation for a selected field.
     """
-    print("\n=== RECOMENDAÇÃO SUSTENTÁVEL ===")
+    print_title("Recomendação Sustentável")
 
     fields = load_data(FIELDS_FILE_PATH)
 
     if not fields:
-        print("Nenhum talhão cadastrado.")
+        print_empty_message("Nenhum talhão cadastrado.")
         return
 
-    print("\nTalhões disponíveis:")
+    print_subtitle("Talhões disponíveis")
     for field in fields:
-        print(f"ID: {field['field_id']} | Nome: {field['name']} | Cultura: {field['crop_type']}")
+        print_separator()
+        print_key_value("ID", field["field_id"])
+        print_key_value("Nome", field["name"])
+        print_key_value("Cultura", field["crop_type"])
 
     field_id = get_valid_field_id(
         "\nDigite o ID do talhão para gerar a recomendação: ",
@@ -114,13 +143,17 @@ def generate_sustainable_recommendation():
         environmental_risk
     )
 
-    print("\n=== RESULTADO DA RECOMENDAÇÃO ===")
-    print(f"Talhão: {selected_field['name']}")
-    print(f"Cultura: {selected_field['crop_type']}")
-    print(f"Nível de uso de fertilizante: {usage_level}")
-    print(f"Nível de eficiência produtiva: {efficiency_level}")
-    print(f"Nível de risco ambiental: {environmental_risk}")
-    print(f"Recomendação: {recommendation}")
+    print_title("Resultado da Recomendação")
+    print_separator()
+
+    print_key_value("Talhão", selected_field["name"])
+    print_key_value("Cultura", selected_field["crop_type"])
+    print_key_value("Nível de uso de fertilizante", usage_level)
+    print_key_value("Nível de eficiência produtiva", efficiency_level)
+    print_key_value("Nível de risco ambiental", environmental_risk)
+
+    print_subtitle("Recomendação")
+    print(recommendation)
 
     write_log(
         "SUSTAINABLE_RECOMMENDATION_GENERATED",

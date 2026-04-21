@@ -23,6 +23,13 @@ from data.oracle_manager import (
     list_production_records_from_oracle
 )
 from utils.helpers import generate_next_id
+from utils.formatters import (
+    print_title,
+    print_subtitle,
+    print_separator,
+    print_empty_message,
+    print_key_value
+)
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -60,36 +67,39 @@ def list_fields():
     """
     Displays all registered fields from JSON and Oracle.
     """
-    print("\n=== TALHÕES EM JSON ===")
+
+    print_title("Talhões em JSON")
 
     fields = load_data(FIELDS_FILE_PATH)
 
     if not fields:
-        print("Nenhum talhão cadastrado no JSON.")
+        print_empty_message("Nenhum talhão cadastrado no JSON.")
     else:
         for field in fields:
-            print(f"\nID: {field['field_id']}")
-            print(f"Nome: {field['name']}")
-            print(f"Área (ha): {field['area']}")
-            print(f"Cultura: {field['crop_type']}")
+            print_separator()
+            print_key_value("ID", field["field_id"])
+            print_key_value("Nome", field["name"])
+            print_key_value("Área (ha)", field["area"])
+            print_key_value("Cultura", field["crop_type"])
 
-    print("\n=== TALHÕES NO ORACLE ===")
+    print_title("Talhões no Oracle")
 
     oracle_success, oracle_result = list_fields_from_oracle()
 
     if not oracle_success:
-        print(oracle_result)
+        print_empty_message(oracle_result)
         return
 
     if not oracle_result:
-        print("Nenhum talhão cadastrado no Oracle.")
+        print_empty_message("Nenhum talhão cadastrado no Oracle.")
         return
 
     for row in oracle_result:
-        print(f"\nID: {row[0]}")
-        print(f"Nome: {row[1]}")
-        print(f"Área (ha): {row[2]}")
-        print(f"Cultura: {row[3]}")
+        print_separator()
+        print_key_value("ID", row[0])
+        print_key_value("Nome", row[1])
+        print_key_value("Área (ha)", row[2])
+        print_key_value("Cultura", row[3])
 
 def delete_field():
     """
