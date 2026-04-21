@@ -3,6 +3,17 @@
 from data.json_manager import load_data
 from utils.validators import get_valid_field_id
 from data.txt_manager import write_log
+from utils.formatters import (
+    print_title,
+    print_subtitle,
+    print_separator,
+    print_empty_message,
+    print_key_value
+)
+
+USAGE_LEVELS = ("baixo", "moderado", "alto")
+EFFICIENCY_LEVELS = ("baixa", "média", "alta")
+RISK_LEVELS = ("baixo", "médio", "alto")
 
 FIELDS_FILE_PATH = "src/data/fields.json"
 APPLICATIONS_FILE_PATH = "src/data/fertilizer_applications.json"
@@ -13,54 +24,56 @@ def classify_fertilizer_usage(total_fertilizer):
     Classifies fertilizer usage intensity.
     """
     if total_fertilizer <= 50:
-        return "baixo"
-    if total_fertilizer <= 100:
-        return "moderado"
-    return "alto"
+        return USAGE_LEVELS[0]
+    elif total_fertilizer <= 100:
+        return USAGE_LEVELS[1]
+    else:
+        return USAGE_LEVELS[2]
 
 def classify_efficiency(efficiency_index):
     """
     Classifies production efficiency.
     """
     if efficiency_index < 2:
-        return "baixa"
-    if efficiency_index <= 4:
-        return "média"
-    return "alta"
+        return EFFICIENCY_LEVELS[0]
+    elif efficiency_index < 5:
+        return EFFICIENCY_LEVELS[1]
+    else:
+        return EFFICIENCY_LEVELS[2]
 
 def classify_environmental_risk(usage_level, efficiency_level):
     """
     Classifies environmental risk based on fertilizer usage and productivity efficiency.
     """
-    if usage_level == "alto" and efficiency_level == "baixa":
-        return "alto"
+    if usage_level == USAGE_LEVELS[2] and efficiency_level == EFFICIENCY_LEVELS[0]:
+        return RISK_LEVELS[2]
 
-    if usage_level == "moderado" and efficiency_level == "baixa":
-        return "médio"
+    if usage_level == USAGE_LEVELS[2] and efficiency_level == EFFICIENCY_LEVELS[2]:
+        return RISK_LEVELS[1]
 
-    if usage_level == "alto" and efficiency_level == "média":
-        return "médio"
+    if usage_level == USAGE_LEVELS[0] and efficiency_level == EFFICIENCY_LEVELS[2]:
+        return RISK_LEVELS[0]
 
-    if usage_level == "baixo" and efficiency_level == "alta":
-        return "baixo"
-
-    return "médio"
+    return RISK_LEVELS[1]
 
 def analyze_field_efficiency():
     """
     Analyzes fertilizer usage, production efficiency and environmental risk for a selected field.
     """
-    print("\n=== ANÁLISE DE EFICIÊNCIA DO TALHÃO ===")
+    print_title("Análise de Eficiência do Talhão")
 
     fields = load_data(FIELDS_FILE_PATH)
 
     if not fields:
-        print("Nenhum talhão cadastrado.")
+        print_empty_message("Nenhum talhão cadastrado.")
         return
 
-    print("\nTalhões disponíveis:")
+    print_subtitle("Talhões disponíveis")
     for field in fields:
-        print(f"ID: {field['field_id']} | Nome: {field['name']} | Cultura: {field['crop_type']}")
+        print_separator()
+        print_key_value("ID", field["field_id"])
+        print_key_value("Nome", field["name"])
+        print_key_value("Cultura", field["crop_type"])
 
     field_id = get_valid_field_id(
         "\nDigite o ID do talhão para análise: ",
@@ -110,17 +123,18 @@ def analyze_field_efficiency():
         efficiency_level
     )
 
-    print("\n=== RESULTADO DA ANÁLISE ===")
-    print(f"Talhão: {selected_field['name']}")
-    print(f"Cultura: {selected_field['crop_type']}")
-    print(f"Quantidade de aplicações: {application_count}")
-    print(f"Volume total de fertilizante: {total_fertilizer}")
-    print(f"Quantidade de registros de produção: {production_record_count}")
-    print(f"Produção total registrada: {total_production}")
-    print(f"Índice de eficiência produtiva: {efficiency_index:.2f}")
-    print(f"Nível de uso de fertilizante: {usage_level}")
-    print(f"Nível de eficiência produtiva: {efficiency_level}")
-    print(f"Nível de risco ambiental: {environmental_risk}")
+    print_title("Resultado da Análise")
+    print_separator()
+    print_key_value("Talhão", selected_field["name"])
+    print_key_value("Cultura", selected_field["crop_type"])
+    print_key_value("Quantidade de aplicações", application_count)
+    print_key_value("Volume total de fertilizante", total_fertilizer)
+    print_key_value("Quantidade de registros de produção", production_record_count)
+    print_key_value("Produção total registrada", total_production)
+    print_key_value("Índice de eficiência produtiva", f"{efficiency_index:.2f}")
+    print_key_value("Nível de uso de fertilizante", usage_level)
+    print_key_value("Nível de eficiência produtiva", efficiency_level)
+    print_key_value("Nível de risco ambiental", environmental_risk)
 
     write_log(
         "FIELD_ANALYZED",
