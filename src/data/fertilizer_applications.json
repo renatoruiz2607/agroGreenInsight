@@ -1,0 +1,72 @@
+[
+  {
+    "application_id": 1,
+    "field_id": 1,
+    "fertilizer_type": "NPK 20-05-20",
+    "quantity": 20.0,
+    "application_date": "10/01/2026"
+  },
+  {
+    "application_id": 2,
+    "field_id": 1,
+    "fertilizer_type": "Ureia",
+    "quantity": 15.0,
+    "application_date": "05/02/2026"
+  },
+  {
+    "application_id": 3,
+    "field_id": 2,
+    "fertilizer_type": "NPK 20-05-20",
+    "quantity": 80.0,
+    "application_date": "12/01/2026"
+  },
+  {
+    "application_id": 4,
+    "field_id": 2,
+    "fertilizer_type": "Ureia",
+    "quantity": 70.0,
+    "application_date": "08/02/2026"
+  },
+  {
+    "application_id": 5,
+    "field_id": 3,
+    "fertilizer_type": "MAP",
+    "quantity": 60.0,
+    "application_date": "14/01/2026"
+  },
+  {
+    "application_id": 6,
+    "field_id": 3,
+    "fertilizer_type": "Cloreto de potássio",
+    "quantity": 65.0,
+    "application_date": "10/02/2026"
+  },
+  {
+    "application_id": 7,
+    "field_id": 4,
+    "fertilizer_type": "NPK 10-10-10",
+    "quantity": 18.0,
+    "application_date": "11/01/2026"
+  },
+  {
+    "application_id": 8,
+    "field_id": 4,
+    "fertilizer_type": "Composto orgânico",
+    "quantity": 17.0,
+    "application_date": "09/02/2026"
+  },
+  {
+    "application_id": 9,
+    "field_id": 5,
+    "fertilizer_type": "NPK 04-14-08",
+    "quantity": 35.0,
+    "application_date": "13/01/2026"
+  },
+  {
+    "application_id": 10,
+    "field_id": 5,
+    "fertilizer_type": "Sulfato de potássio",
+    "quantity": 30.0,
+    "application_date": "11/02/2026"
+  }
+]

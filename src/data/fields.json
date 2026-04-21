@@ -1,0 +1,32 @@
+[
+  {
+    "field_id": 1,
+    "name": "Talhão Milho Norte",
+    "area": 12.5,
+    "crop_type": "Milho"
+  },
+  {
+    "field_id": 2,
+    "name": "Talhão Cana Sul",
+    "area": 25.0,
+    "crop_type": "Cana-de-açúcar"
+  },
+  {
+    "field_id": 3,
+    "name": "Talhão Soja Leste",
+    "area": 18.0,
+    "crop_type": "Soja"
+  },
+  {
+    "field_id": 4,
+    "name": "Talhão Café Sede",
+    "area": 9.0,
+    "crop_type": "Café"
+  },
+  {
+    "field_id": 5,
+    "name": "Talhão Uva Colina",
+    "area": 6.5,
+    "crop_type": "Uva"
+  }
+]
